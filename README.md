@@ -1,39 +1,54 @@
-# Vagrant::Disksize
+# vagrant-disksize
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/vagrant/disksize`. To experiment with that code, run `bin/console` for an interactive prompt.
+A Vagrant plugin to resize disks in VirtualBox
 
-TODO: Delete this and the text above, and describe your gem
 
 ## Installation
 
-Add this line to your application's Gemfile:
 
-```ruby
-gem 'vagrant-disksize'
+```shell
+vagrant plugin install vagrant-disksize
 ```
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install vagrant-disksize
 
 ## Usage
 
-TODO: Write usage instructions here
+In your Vagrantfile
+
+```ruby
+config.disksize.size = '50GB'
+```
+
+## Limitations
+
+At present only the first disk will be resized. That seems to be OK for
+typical boxes such as the official Ubuntu images for Xenial, but there may
+well be other configurations where the first disk found isn't the main HDD.
+
+The plugin only works with VirtualBox but it will issue an error message
+and then disable itself if you try to use it with another provider.
+
+Disks can only be increased in size. There is no facility to shrink a disk.
+
+Depending on the guest, you may need to resize the partition and the filesystem
+from within the guest. At present the plugin only resizes the underlying disk.
+
+This hasn't been tested on a wide variety of versions of Vagrant or VirtualBox.
+It works for, at least, Vagrant 1.8.5 and VirtualBox 5.1.x, but any
+feedback about other versions, particularly older ones, would be much appreciated.
 
 ## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+After checking out the repo, run `bin/setup` to install dependencies.
+You can also run `bin/console` for an interactive prompt that will allow you to experiment.
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+To install this gem onto your local machine, run `bundle exec rake install`.
+To release a new version, update the version number in `version.rb`, and then
+run `bundle exec rake release`, which will create a git tag for the version,
+push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/vagrant-disksize.
-
+Bug reports and pull requests are welcome on GitHub at https://github.com/sprotheroe/vagrant-disksize.
 
 ## License
 
