@@ -12,11 +12,24 @@ vagrant plugin install vagrant-disksize
 
 ## Usage
 
-In your Vagrantfile
+Set the size you want for your disk in your Vagrantfile. For example
 
 ```ruby
-config.disksize.size = '50GB'
+Vagrant.configure('2') do |config|
+  config.vm.box = 'ubuntu/xenial64'
+  config.disksize.size = '50GB'
+end
 ```
+
+You can specify the size as a raw number (in bytes) or using KB, MB, GB
+or TB (though I'd be interested to learn more if you are using Vagrant
+to create multi-terabyte disks). Internally the size will be converted
+to megabytes, for ease of interaction with VirtualBox. If the value you
+specify isn't a whole number of megabytes, it will be rounded up, to
+ensure you have at least the capacity you requested. Note that the
+plugin uses the original definitions so, for example, 1 GB = 1024 MB;
+we don't have to use hardware manufacturer marketing maths here and
+it makes the internal maths easier.
 
 ## Limitations
 
