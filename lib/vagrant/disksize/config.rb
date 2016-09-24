@@ -10,6 +10,7 @@ module Vagrant
       end
 
       def finalize!
+        return if @size == UNSET_VALUE
         # Convert from human to machine readable
         size_str = @size.to_s.strip
         matches = SIZE_REGEX.match(size_str)
