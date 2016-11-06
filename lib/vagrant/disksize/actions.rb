@@ -19,9 +19,11 @@ module Vagrant
         def call(env)
           # Resize disk itself before boot
           if @enabled
-            size = @machine.config.disksize.size
-            ensure_disk_resizable(env)
-            resize_disk(env, size)
+            requested_size = @machine.config.disksize.size
+            if requested_size
+              ensure_disk_resizable(env)
+              resize_disk(env, requested_size)
+            end
           end
 
           # Allow middleware chain to continue so VM is booted
