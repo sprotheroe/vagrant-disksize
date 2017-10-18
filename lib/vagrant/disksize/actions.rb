@@ -66,11 +66,11 @@ module Vagrant
         end
 
         def clone_as_vdi(driver, src, dst)
-          driver.execute('clonemedium', src[:file], dst[:file], '--format', 'VDI')
+          driver.execute('clonehd', src[:file], dst[:file], '--format', 'VDI')
         end
 
         def grow_vdi(driver, disk, size)
-          driver.execute('modifymedium', disk[:file], '--resize', size.to_s)
+          driver.execute('modifyhd', disk[:file], '--resize', size.to_s)
         end
 
         def attach_disk(driver, disk)
@@ -83,7 +83,7 @@ module Vagrant
 
         def get_disk_size(driver, disk)
           size = nil
-          driver.execute('showmediuminfo', disk[:file]).each_line do |line|
+          driver.execute('showhdinfo', disk[:file]).each_line do |line|
             if line =~ /Capacity:\s+([0-9]+)\s+MB/
               size = $1.to_i
             end
