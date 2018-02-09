@@ -6,6 +6,8 @@ module Vagrant
 
         # NOTE - size is represented in MB throughout this class, for ease of using with VirtualBox
 
+        # Creates infix for VBoxManage commands (driver.execute)
+        # according to VirtualBox version
         VB_Meta = VagrantPlugins::ProviderVirtualBox::Driver::Meta.new()
         if VB_Meta.version >= '5.0'
           MEDIUM = 'medium'
