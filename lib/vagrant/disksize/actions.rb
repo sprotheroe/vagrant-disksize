@@ -53,7 +53,7 @@ module Vagrant
             unless File.exist? new_disk[:file]
               clone_as_vdi(driver, old_disk, new_disk)
               attach_disk(driver, new_disk)
-              File.delete(old_disk[:file])
+              remove_disk(driver, old_disk)
             end
           end
         end
@@ -88,6 +88,10 @@ module Vagrant
           port = parts[1]
           device = parts[2]
           driver.execute('storageattach', @machine.id, '--storagectl', controller, '--port', port, '--device', device, '--type', 'hdd',  '--medium', disk[:file])
+        end
+
+        def remove_disk(driver, disk)
+          driver.execute("closemedium", disk[:file], '--delete')
         end
 
         def get_disk_size(driver, disk)
