@@ -106,13 +106,15 @@ module Vagrant
           disk_keys = vminfo.keys.select { |k| k =~ /-ImageUUID-/ }
           disk_keys.each do |key|
             uuid = vminfo[key]
-            disk_name = key.gsub(/-ImageUUID-/,'-')
-            disk_file = vminfo[disk_name]
-            disks << {
-              uuid: uuid,
-              name: disk_name,
-              file: disk_file
-            }
+            if is_disk(driver, uuid)
+              disk_name = key.gsub(/-ImageUUID-/,'-')
+              disk_file = vminfo[disk_name]
+              disks << {
+                uuid: uuid,
+                name: disk_name,
+                file: disk_file
+              }
+            end
           end
           disks
         end
@@ -126,6 +128,15 @@ module Vagrant
             vminfo[key] = value
           end
           vminfo
+        end
+
+        def is_disk(driver, uuid)
+          begin
+            driver.execute("showmediuminfo", 'disk', uuid)
+            true
+          rescue
+            false
+          end
         end
 
         def generate_resizable_disk(disk)
