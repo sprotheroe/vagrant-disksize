@@ -6,6 +6,15 @@ module Vagrant
 
         # NOTE - size is represented in MB throughout this class, for ease of using with VirtualBox
 
+        # Creates infix for VBoxManage commands (driver.execute)
+        # according to VirtualBox version
+        VB_Meta = VagrantPlugins::ProviderVirtualBox::Driver::Meta.new()
+        if VB_Meta.version >= '5.0'
+          MEDIUM = 'medium'
+        else
+          MEDIUM = 'hd'
+        end
+
         def initialize(app, env)
           @app = app
           @machine = env[:machine]
@@ -66,11 +75,11 @@ module Vagrant
         end
 
         def clone_as_vdi(driver, src, dst)
-          driver.execute('clonemedium', src[:file], dst[:file], '--format', 'VDI')
+          driver.execute("clone#{MEDIUM}", src[:file], dst[:file], '--format', 'VDI')
         end
 
         def grow_vdi(driver, disk, size)
-          driver.execute('modifymedium', disk[:file], '--resize', size.to_s)
+          driver.execute("modify#{MEDIUM}", disk[:file], '--resize', size.to_s)
         end
 
         def attach_disk(driver, disk)
@@ -83,7 +92,7 @@ module Vagrant
 
         def get_disk_size(driver, disk)
           size = nil
-          driver.execute('showmediuminfo', disk[:file]).each_line do |line|
+          driver.execute("show#{MEDIUM}info", disk[:file]).each_line do |line|
             if line =~ /Capacity:\s+([0-9]+)\s+MB/
               size = $1.to_i
             end
