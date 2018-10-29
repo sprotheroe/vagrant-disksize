@@ -89,6 +89,14 @@ module Vagrant
           device = parts[2]
           driver.execute('storageattach', @machine.id, '--storagectl', controller, '--port', port, '--device', device, '--type', 'hdd',  '--medium', disk[:file])
         end
+				
+        def remove_disk(driver, disk)
+          parts = disk[:name].split('-')
+          controller = parts[0]
+          port = parts[1]
+          device = parts[2]
+          driver.execute('closemedium', 'disk', disk[:uuid], '--delete')
+        end
 
         def remove_disk(driver, disk)
           driver.execute("closemedium", disk[:file], '--delete')
