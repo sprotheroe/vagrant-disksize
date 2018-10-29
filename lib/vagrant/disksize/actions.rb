@@ -91,7 +91,7 @@ module Vagrant
         end
 
         def remove_disk(driver, disk)
-          driver.execute("closemedium", disk[:file], '--delete')
+          driver.execute("close#{MEDIUM}", disk[:file], '--delete')
         end
 
         def get_disk_size(driver, disk)
@@ -136,7 +136,7 @@ module Vagrant
 
         def is_disk(driver, uuid)
           begin
-            driver.execute("showmediuminfo", 'disk', uuid)
+            driver.execute("show#{MEDIUM}info", 'disk', uuid)
             true
           rescue
             false
