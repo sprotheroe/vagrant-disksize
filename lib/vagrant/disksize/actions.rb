@@ -145,6 +145,7 @@ module Vagrant
 
         def generate_resizable_disk(disk)
           src = disk[:file]
+          src.gsub!(/\\+/, '/')
           src_extn = File.extname(src)
           src_path = File.dirname(src)
           src_base = File.basename(src, src_extn)
