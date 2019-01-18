@@ -31,6 +31,39 @@ plugin uses the original definitions so, for example, 1 GB = 1024 MB;
 we don't have to use hardware manufacturer marketing maths here and
 it makes the internal maths easier.
 
+### Shrinking the VDI file
+
+Internally the plugin will convert the format of the virtual machine's
+disk file to the VDI format.  The new disk is created with dynamic
+sizing, meaning the physical `.vdi` disk file on the host will
+start small, and grow over time as data is added in the guest.
+
+Unfortunately, by default, the `.vdi` file will never shrink back,
+even if one deletes all the data inside the guest.  This is not
+a side-effect of this plugin, it's how virtualbox works with
+virtual hard disks.
+
+There is a feature in virtualBox that allows to turn on the TRIM
+feature on non-rotational disks.  This plugin turns on this
+feature when re-attaching the resized disk to the VM.
+
+A nice effect of this TRIM feature, applied to VirtualBox, is that
+when the guest OS issues the TRIM request on the virtual hard disk,
+it causes the corresponding `.vdi` physical file on the host to
+shrink.
+
+Since TRIM takes some time to execute, it's not enabled by default
+on Linux guest OS such as Ubuntu.  To use this feature in the
+guest:
+
+1. Inside the guest, delete unused files to make room in the file
+   system.
+2. To reclaim most of that space on the corresponding `.vdi` file
+   on the host, make the guest OS issue the TRIM command on the
+   virtual hard disk.  This can be different per guest OS.
+   On Linux-based guests like Ubuntu, run `sudo fstrim /`.
+
+
 ## Limitations
 
 At present only the first disk will be resized. That seems to be OK for
