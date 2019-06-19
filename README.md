@@ -42,12 +42,33 @@ and then disable itself if you try to use it with another provider.
 
 Disks can only be increased in size. There is no facility to shrink a disk.
 
-Depending on the guest, you may need to resize the partition and the filesystem
-from within the guest. At present the plugin only resizes the underlying disk.
-
 This hasn't been tested on a wide variety of versions of Vagrant or VirtualBox.
 It works for, at least, Vagrant 1.8.5 and VirtualBox 5.1.x, but any
 feedback about other versions, particularly older ones, would be much appreciated.
+
+### Additional steps
+
+Depending on the guest, you may need to resize the partition and the filesystem
+from within the guest. At present the plugin only resizes the underlying disk.
+
+To adapt the filesystem of a logical volume located at `/dev/VolGroup00/LogVol00` inside `/dev/sda3` follow these steps:
+
+```sh
+# 1. Install Dependencies
+sudo yum install -y cloud-utils-growpart xfsprogs
+
+# 2. Extend device partition
+sudo growpart /dev/sda 3
+
+# 3. Extend physical volume
+sudo pvresize /dev/sda3
+
+# 4. Extend logical volume
+sudo lvextend -l+100%FREE /dev/VolGroup00/LogVol00
+
+# 5. Extend file system
+sudo xfs_growfs -d /
+
 
 ## Development
 
