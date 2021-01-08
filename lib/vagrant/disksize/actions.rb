@@ -32,6 +32,7 @@ module Vagrant
             if requested_size
               ensure_disk_resizable(env)
               resize_disk(env, requested_size)
+              convert_vmdk(env)
             end
           end
 
@@ -43,13 +44,29 @@ module Vagrant
 
         private
 
-        def ensure_disk_resizable(env)
+        def convert_vmdk(env)
           driver = @machine.provider.driver
           disks = identify_disks(driver)
           # TODO Shouldn't assume that the first disk is the one we want to resize
+          old_disk = disks.first
+          env[:ui].success "old disk for convert_vmdk : #{old_disk}"
+          new_disk = generate_resizable_disk(env, old_disk, '.vmdk')
+          unless File.exist? new_disk[:file]
+            env[:ui].success "new disk for convert_vmdk : #{new_disk}"
+            clone_as_vmdk(driver, old_disk, new_disk)
+            attach_disk(driver, new_disk)
+            remove_disk(driver, old_disk)
+          end
+        end
+
+        def ensure_disk_resizable(env)
+          driver = @machine.provider.driver
+          disks = identify_disks(driver)
+          env[:ui].success "disks found for ensure_disk_resizable : #{disks}"
+          # TODO Shouldn't assume that the first disk is the one we want to resize
           unless disk_resizeable? disks.first
             old_disk = disks.first
-            new_disk = generate_resizable_disk(old_disk)
+            new_disk = generate_resizable_disk(env, old_disk, '.vdi')
             unless File.exist? new_disk[:file]
               clone_as_vdi(driver, old_disk, new_disk)
               attach_disk(driver, new_disk)
@@ -61,6 +78,7 @@ module Vagrant
         def resize_disk(env, req_size)
           driver = @machine.provider.driver
           disks = identify_disks(driver)
+          env[:ui].success "disks found for ensure_disk_resizable : #{disks}"
           target = disks.first    # TODO Shouldn't assume that the first disk is the one we want to resize
 
           old_size = get_disk_size(driver, target)
@@ -76,6 +94,10 @@ module Vagrant
 
         def clone_as_vdi(driver, src, dst)
           driver.execute("clone#{MEDIUM}", src[:file], dst[:file], '--format', 'VDI')
+        end
+
+        def clone_as_vmdk(driver, src, dst)
+          driver.execute("clone#{MEDIUM}", src[:file], dst[:file], '--format', 'VMDK', '--variant', 'Split2G')
         end
 
         def grow_vdi(driver, disk, size)
@@ -114,9 +136,9 @@ module Vagrant
               disk_name = key.gsub(/-ImageUUID-/,'-')
               disk_file = vminfo[disk_name]
               disks << {
-                uuid: uuid,
-                name: disk_name,
-                file: disk_file
+                  uuid: uuid,
+                  name: disk_name,
+                  file: disk_file
               }
             end
           end
@@ -143,12 +165,14 @@ module Vagrant
           end
         end
 
-        def generate_resizable_disk(disk)
+        def generate_resizable_disk(env, disk, extension)
+          env[:ui].success "Trying to generate file for disk : #{disk}"
           src = disk[:file]
           src_extn = File.extname(src)
           src_path = File.dirname(src)
           src_base = File.basename(src, src_extn)
-          dst = File.join(src_path, src_base) + '.vdi'
+          dst = File.join(src_path, src_base) + extension
+          env[:ui].success "Generated file : #{dst}"
           disk.merge({ uuid: "(undefined)", file: dst })
         end
 
